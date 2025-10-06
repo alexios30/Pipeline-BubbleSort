@@ -1,0 +1,16 @@
+services:
+  jenkins:
+    image: 'jenkins/jenkins:latest'
+    container_name: "jenkins"
+    restart: unless-stopped
+    labels:
+      kompose.service.type: nodeport
+    volumes:
+      - jenkins_data:/jenkins_home
+      - jenkins:/jenkins_config
+    ports:
+      - "8080:8080"
+
+volumes:
+  jenkins_data:
+  jenkins:
