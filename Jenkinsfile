@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Cloner le dépôt') {
             steps {
-                git 'https://ton-repo.git' // Remplace par l’URL de ton repo Git
+                git 'https://github.com/alexios30/Pipeline-BubbleSort' 
             }
         }
 
