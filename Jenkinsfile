@@ -62,7 +62,7 @@ pipeline {
     }
 }
 
-// 🔍 Fonction pour détecter Windows
+
 def isWindows() {
     return System.getProperty('os.name').toLowerCase().contains('windows')
 }
