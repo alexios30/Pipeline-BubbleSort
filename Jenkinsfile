@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        IS_WINDOWS = "${isWindows()}"
+    }
+
     stages {
         stage('Cloner le dépôt') {
             steps {
@@ -10,26 +14,55 @@ pipeline {
 
         stage('Compiler') {
             steps {
-                sh 'make'
+                script {
+                    if (isWindows()) {
+                        bat 'gcc -o bubblesort bubblesort.c'
+                    } else {
+                        sh 'gcc -o bubblesort bubblesort.c'
+                    }
+                }
             }
         }
 
-        stage('Exécuter le tri') {
+        stage('Exécuter le programme') {
             steps {
-                sh './bubblesort'
+                script {
+                    if (isWindows()) {
+                        bat '.\\bubblesort.exe'
+                    } else {
+                        sh './bubblesort'
+                    }
+                }
             }
         }
 
-        stage('Tester (facultatif)') {
+        stage('Test (optionnel)') {
             steps {
-                sh './test.sh'
+                script {
+                    if (isWindows()) {
+                        bat 'test.bat'
+                    } else {
+                        sh './test.sh'
+                    }
+                }
             }
         }
 
         stage('Nettoyage') {
             steps {
-                sh 'make clean'
+                script {
+                    if (isWindows()) {
+                        bat 'del bubblesort.exe'
+                    } else {
+                        sh 'rm -f bubblesort'
+                    }
+                }
             }
         }
     }
+}
+
+// 🔍 Fonction pour détecter Windows
+def isWindows() {
+    return System.getProperty('os.name').toLowerCase().contains('windows')
 }
