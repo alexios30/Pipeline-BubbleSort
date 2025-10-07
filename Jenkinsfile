@@ -1,24 +1,20 @@
 pipeline {
     agent any
 
-    environment {
-        IS_WINDOWS = "${isWindows()}"
-    }
-
     stages {
         stage('Cloner le dépôt') {
             steps {
-                git 'https://github.com/alexios30/Pipeline-BubbleSort' 
+                git 'https://github.com/alexios30/Pipeline-BubbleSort'
             }
         }
 
         stage('Compiler') {
             steps {
                 script {
-                    if (isWindows()) {
-                        bat 'gcc -o bubblesort bubblesort.c'
-                    } else {
+                    if (isUnix()) {
                         sh 'gcc -o bubblesort bubblesort.c'
+                    } else {
+                        bat 'gcc -o bubblesort bubblesort.c'
                     }
                 }
             }
@@ -27,10 +23,10 @@ pipeline {
         stage('Exécuter le programme') {
             steps {
                 script {
-                    if (isWindows()) {
-                        bat '.\\bubblesort.exe'
-                    } else {
+                    if (isUnix()) {
                         sh './bubblesort'
+                    } else {
+                        bat '.\\bubblesort.exe'
                     }
                 }
             }
@@ -39,10 +35,10 @@ pipeline {
         stage('Test (optionnel)') {
             steps {
                 script {
-                    if (isWindows()) {
-                        bat 'test.bat'
-                    } else {
+                    if (isUnix()) {
                         sh './test.sh'
+                    } else {
+                        bat 'test.bat'
                     }
                 }
             }
@@ -51,17 +47,16 @@ pipeline {
         stage('Nettoyage') {
             steps {
                 script {
-                    if (isWindows()) {
-                        bat 'del bubblesort.exe'
-                    } else {
+                    if (isUnix()) {
                         sh 'rm -f bubblesort'
+                    } else {
+                        bat 'del bubblesort.exe'
                     }
                 }
             }
         }
     }
 }
-
 
 def isWindows() {
     return System.getProperty('os.name').toLowerCase().contains('windows')
