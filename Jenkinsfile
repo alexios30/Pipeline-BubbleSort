@@ -18,26 +18,62 @@ pipeline {
 
         stage('Compiler') {
             steps {
-                sh 'gcc -o bubblesort bubblesort.c'
+                script {
+                    try {
+                        sh './compile.sh'
+                    } catch (Exception e) {
+                        echo "Erreur lors de la compilation: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        error("Compilation échouée")
+                    }
+                }
             }
         }
 
         stage('Exécuter le programme') {
             steps {
-                sh './bubblesort'
+                script {
+                    try {
+                        sh './run.sh'
+                    } catch (Exception e) {
+                        echo "Erreur lors de l'exécution: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        error("Exécution échouée")
+                    }
+                }
             }
         }
 
-        stage('Test (optionnel)') {
+        stage('Test') {
             steps {
-                sh './test.sh'
+                script {
+                    try {
+                        sh './test.sh'
+                    } catch (Exception e) {
+                        echo "Erreur lors des tests: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        error("Tests échoués")
+                    }
+                }
             }
         }
+    }
 
-        stage('Nettoyage') {
-            steps {
-                sh 'rm -f bubblesort'
+    post {
+        failure {
+            echo "Pipeline échoué - Redémarrage possible"
+            script {
+                if (env.BUILD_NUMBER.toInteger() < 3) {
+                    echo "Tentative de redémarrage automatique..."
+                    build job: env.JOB_NAME, wait: false
+                }
             }
+        }
+        always {
+            echo "Pipeline terminé"
+        }
+        success {
+            echo "Pipeline réussi !"
         }
     }
 }
