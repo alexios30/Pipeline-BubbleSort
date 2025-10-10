@@ -1,12 +1,16 @@
 pipeline {
-    agent any
+    agent {
+        docker { 
+            image 'gcc:latest'   
+        }
+    }
 
     stages {
         stage('Cloner le dépôt') {
             steps {
                 git(
                     url: 'https://github.com/alexios30/Pipeline-BubbleSort',
-                    branch: 'main', 
+                    branch: 'main',
                     credentialsId: 'pipeline-dev'
                 )
             }
@@ -14,54 +18,26 @@ pipeline {
 
         stage('Compiler') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'gcc -o bubblesort bubblesort.c'
-                    } else {
-                        bat 'gcc -o bubblesort bubblesort.c'
-                    }
-                }
+                sh 'gcc -o bubblesort bubblesort.c'
             }
         }
 
         stage('Exécuter le programme') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh './bubblesort'
-                    } else {
-                        bat '.\\bubblesort.exe'
-                    }
-                }
+                sh './bubblesort'
             }
         }
 
         stage('Test (optionnel)') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh './test.sh'
-                    } else {
-                        bat 'test.bat'
-                    }
-                }
+                sh './test.sh'
             }
         }
 
         stage('Nettoyage') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'rm -f bubblesort'
-                    } else {
-                        bat 'del bubblesort.exe'
-                    }
-                }
+                sh 'rm -f bubblesort'
             }
         }
     }
-}
-
-def isWindows() {
-    return System.getProperty('os.name').toLowerCase().contains('windows')
 }
