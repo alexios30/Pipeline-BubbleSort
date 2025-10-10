@@ -4,7 +4,10 @@ pipeline {
     stages {
         stage('Cloner le dépôt') {
             steps {
-                git 'https://github.com/alexios30/Pipeline-BubbleSort'
+                git(
+                    url: 'https://github.com/alexios30/Pipeline-BubbleSort',
+                    credentialsId: 'pipeline-dev'
+                )
             }
         }
 
