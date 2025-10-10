@@ -6,6 +6,7 @@ pipeline {
             steps {
                 git(
                     url: 'https://github.com/alexios30/Pipeline-BubbleSort',
+                    branch: 'main', 
                     credentialsId: 'pipeline-dev'
                 )
             }
