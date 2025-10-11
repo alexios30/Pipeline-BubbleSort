@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker { 
-            image 'gcc:latest'   
-        }
-    }
+    agent any  
 
     stages {
         stage('Cloner le dépôt') {
@@ -18,62 +14,20 @@ pipeline {
 
         stage('Compiler') {
             steps {
-                script {
-                    try {
-                        sh './compile.sh'
-                    } catch (Exception e) {
-                        echo "Erreur lors de la compilation: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        error("Compilation échouée")
-                    }
-                }
+                sh 'gcc -o bubblesort bubblesort.c'
             }
         }
 
         stage('Exécuter le programme') {
             steps {
-                script {
-                    try {
-                        sh './run.sh'
-                    } catch (Exception e) {
-                        echo "Erreur lors de l'exécution: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        error("Exécution échouée")
-                    }
-                }
+                sh './bubblesort'
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    try {
-                        sh './test.sh'
-                    } catch (Exception e) {
-                        echo "Erreur lors des tests: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        error("Tests échoués")
-                    }
-                }
+                sh './test.sh'
             }
-        }
-    }
-
-    post {
-        failure {
-            echo "Pipeline échoué - Redémarrage possible"
-            script {
-                if (env.BUILD_NUMBER.toInteger() < 3) {
-                    echo "Tentative de redémarrage automatique..."
-                    build job: env.JOB_NAME, wait: false
-                }
-            }
-        }
-        always {
-            echo "Pipeline terminé"
-        }
-        success {
-            echo "Pipeline réussi !"
         }
     }
 }
