@@ -28,7 +28,9 @@ pipeline {
         stage('Test') {
             steps {
                 echo '=== TESTS ==='
-                sh './bubblesort'
+                timeout(time: 15, unit: 'SECONDS') {  // <- timeout ajouté ici
+                    sh './bubblesort'
+                }
             }
         }
     }
