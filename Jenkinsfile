@@ -1,35 +1,41 @@
 pipeline {
-    agent {
-        docker { image 'gcc:latest' }
-    }
+    agent any
 
     stages {
-        stage('Cloner le dépôt') {
+        stage('Checkout') {
             steps {
                 git(
                     url: 'https://github.com/alexios30/Pipeline-BubbleSort',
-                    branch: 'main',
-                    credentialsId: 'pipeline-dev'
+                    branch: 'test',
+                    credentialsId: 'pipeline-de'
                 )
             }
         }
 
-        stage('Compiler') {
+        stage('Install Dependencies') {
             steps {
+                sh 'apt-get update && apt-get install -y gcc'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo '=== COMPILATION DU PROGRAMME ==='
                 sh 'gcc -o bubblesort bubblesort.c'
             }
         }
 
-        stage('Tests unitaires et intégration') {
+        stage('Test') {
             steps {
-                sh './test.sh'
-            }
-        }
-
-        stage('Exécuter le programme') {
-            steps {
+                echo '=== TESTS ==='
                 sh './bubblesort'
             }
+        }
+    }
+
+    post {
+        always {
+            sh 'rm -f bubblesort'
         }
     }
 }
