@@ -1,5 +1,7 @@
 pipeline {
-    agent any  
+    agent {
+        docker { image 'gcc:latest' }
+    }
 
     stages {
         stage('Cloner le dépôt') {
@@ -18,15 +20,15 @@ pipeline {
             }
         }
 
-        stage('Exécuter le programme') {
+        stage('Tests unitaires et intégration') {
             steps {
-                sh './bubblesort'
+                sh './test.sh'
             }
         }
 
-        stage('Test') {
+        stage('Exécuter le programme') {
             steps {
-                sh './test.sh'
+                sh './bubblesort'
             }
         }
     }
