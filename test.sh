@@ -5,7 +5,7 @@
 # 1 -> tri croissant
 # \n -> appuyer sur entrée pour continuer
 # 3 -> quitter
-printf "1\n1\n\n3\n" | ./bubblesort > output.txt
+printf "1" | ./bubblesort > output.txt
 
 if grep -q "11 12 22 25 34 64 50 42 76 88 90" output.txt; then
     echo "Test réussi ✅"
