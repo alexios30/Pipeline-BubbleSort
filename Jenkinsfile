@@ -1,79 +1,43 @@
 pipeline {
-    agent {
-        docker { 
-            image 'gcc:latest'   
-        }
-    }
+    agent any
 
     stages {
-        stage('Cloner le dépôt') {
+        stage('Checkout') {
             steps {
                 git(
                     url: 'https://github.com/alexios30/Pipeline-BubbleSort',
                     branch: 'main',
-                    credentialsId: 'pipeline-dev'
                 )
             }
         }
 
-        stage('Compiler') {
+        stage('Install Dependencies') {
             steps {
-                script {
-                    try {
-                        sh './compile.sh'
-                    } catch (Exception e) {
-                        echo "Erreur lors de la compilation: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        error("Compilation échouée")
-                    }
-                }
+                sh 'apt-get update && apt-get install -y gcc'
             }
         }
 
-        stage('Exécuter le programme') {
+        stage('Build') {
             steps {
-                script {
-                    try {
-                        sh './run.sh'
-                    } catch (Exception e) {
-                        echo "Erreur lors de l'exécution: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        error("Exécution échouée")
-                    }
-                }
+                echo '=== COMPILATION DU PROGRAMME ==='
+                sh 'gcc -o bubblesort bubblesort.c'
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    try {
-                        sh './test.sh'
-                    } catch (Exception e) {
-                        echo "Erreur lors des tests: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        error("Tests échoués")
-                    }
+                echo '=== TESTS ==='
+                timeout(time: 15, unit: 'SECONDS') {
+                    sh 'chmod +x test.sh'
+                    sh './test.sh'
                 }
             }
         }
     }
 
     post {
-        failure {
-            echo "Pipeline échoué - Redémarrage possible"
-            script {
-                if (env.BUILD_NUMBER.toInteger() < 3) {
-                    echo "Tentative de redémarrage automatique..."
-                    build job: env.JOB_NAME, wait: false
-                }
-            }
-        }
         always {
-            echo "Pipeline terminé"
-        }
-        success {
-            echo "Pipeline réussi !"
+            sh 'rm -f bubblesort'
         }
     }
 }
