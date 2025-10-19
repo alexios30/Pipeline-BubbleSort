@@ -9,16 +9,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                echo '=== RÉCUPÉRATION DU CODE ==='
-                git(
-                    url: 'https://github.com/alexios30/Pipeline-BubbleSort',
-                    branch: 'main'
-                )
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 echo '=== CONSTRUCTION DE L\'IMAGE DOCKER ==='
