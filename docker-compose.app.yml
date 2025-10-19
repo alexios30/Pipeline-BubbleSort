@@ -1,0 +1,12 @@
+# Docker Compose pour l'application BubbleSort
+# Utiliser: docker compose -f docker-compose.app.yml up -d
+
+services:
+  bubblesort-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bubblesort-container
+    restart: unless-stopped
+    # Si vous voulez voir les logs en continu
+    # command: tail -f /dev/null

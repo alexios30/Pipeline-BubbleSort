@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose*.yml
+Dockerfile
+
+# Jenkins
+Jenkinsfile*
+
+# Documentation
+README.md
+
+# IDE
+.vscode
+.idea
+
+# Binaries
+bubblesort
+*.exe
+*.o
