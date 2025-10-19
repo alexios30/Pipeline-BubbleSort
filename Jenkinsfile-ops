@@ -1,0 +1,112 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_IMAGE = 'bubblesort-app'
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
+        DOCKER_REGISTRY = 'localhost:5000' // Modifier selon votre registry
+        CONTAINER_NAME = 'bubblesort-container'
+    }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                echo '=== CONSTRUCTION DE L\'IMAGE DOCKER ==='
+                script {
+                    dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    // Tagger aussi comme latest
+                    dockerImage.tag("latest")
+                }
+            }
+        }
+
+        stage('Test in Docker') {
+            steps {
+                echo '=== TESTS DANS LE CONTENEUR ==='
+                script {
+                    dockerImage.inside {
+                        sh 'chmod +x test.sh'
+                        sh './test.sh'
+                    }
+                }
+            }
+        }
+
+        stage('Push to Registry') {
+            steps {
+                echo '=== ENVOI VERS LE REGISTRY (OPTIONNEL) ==='
+                script {
+                    // Décommenter si vous avez un registry Docker
+                    // docker.withRegistry("http://${DOCKER_REGISTRY}") {
+                    //     dockerImage.push("${DOCKER_TAG}")
+                    //     dockerImage.push("latest")
+                    // }
+                    echo 'Push vers registry désactivé - image disponible localement'
+                }
+            }
+        }
+
+        stage('Stop Old Container') {
+            steps {
+                echo '=== ARRÊT DE L\'ANCIEN CONTENEUR ==='
+                script {
+                    sh """
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
+                    """
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo '=== DÉPLOIEMENT DU CONTENEUR ==='
+                script {
+                    sh """
+                        docker run -d \
+                            --name ${CONTAINER_NAME} \
+                            --restart unless-stopped \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                echo '=== VÉRIFICATION DU DÉPLOIEMENT ==='
+                script {
+                    sh """
+                        echo 'Conteneur déployé:'
+                        docker ps --filter name=${CONTAINER_NAME}
+                        
+                        echo '\nLogs du conteneur:'
+                        docker logs ${CONTAINER_NAME}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline OPS terminé avec succès!'
+            echo "Image déployée: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+        }
+        failure {
+            echo '❌ Pipeline OPS échoué!'
+            script {
+                // Nettoyage en cas d'échec
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+            }
+        }
+        always {
+            echo '=== NETTOYAGE ==='
+            script {
+                // Nettoyer les images non utilisées (optionnel)
+                sh 'docker image prune -f || true'
+            }
+        }
+    }
+}
