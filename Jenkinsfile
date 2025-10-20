@@ -2,15 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                git(
-                    url: 'https://github.com/alexios30/Pipeline-BubbleSort',
-                    branch: 'main'
-                )
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh 'apt-get update && apt-get install -y gcc'
